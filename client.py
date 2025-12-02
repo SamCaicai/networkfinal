@@ -1,10 +1,11 @@
 from socket import *
 from threading import Thread
 import sys
-
 class receive_message:
     def __init__(self, clientSock):
         self.clientSock=clientSock
+        self.msg= self.clientSock.recv(200)
+        print("%d", self.msg)
         Thread(target=self.display, args=()).start()
     def display(self):
         while True:
@@ -15,14 +16,28 @@ class receive_message:
                 else:
                     break
             except:
-                break
+                break   
     
-    
-# Server configuration - can be set via command line argument
-# Usage: python client.py [server_ip] [port]
-# Example: python client.py 192.168.1.100 12000
-serverAdd = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
-serverPort = int(sys.argv[2]) if len(sys.argv) > 2 else 12000
+#serverAdd="127.0.0.1"
+serverPort= 12000
+#serverAdd=sys.argv[1] if len(sys.argv)>1 else "172.19.124.56"
+#serverPort=int(sys.argv[2]) if len(sys.argv)>2 else 12000
+udp = socket(AF_INET, SOCK_DGRAM)
+udp.bind(("", serverPort))
+print("Listening for server broadcasts...")
+
+serverAdd = None
+while serverAdd is None:
+    data, addr = udp.recvfrom(1024)
+    #data, addr= udp.recv(200)
+    msg = data.decode()
+
+    if msg.startswith("SERVER_IP="):
+        serverAdd = msg.split("=")[1]
+        print("Discovered server at:", serverAdd)
+
+udp.close()
+
 clientSock= socket(AF_INET, SOCK_STREAM)
 clientSock.connect((serverAdd, serverPort))
 print("Connected to server! You can now send messages.")
