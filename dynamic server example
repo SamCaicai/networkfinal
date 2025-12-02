@@ -1,0 +1,37 @@
+import socket
+import time
+import threading
+
+TCP_PORT = 5000
+DISCOVERY_PORT = 5001
+MESSAGE = "SERVER_IP="
+
+def discovery_broadcaster():
+    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+
+    # Get server's LAN IP
+    server_ip = socket.gethostbyname(socket.gethostname())
+    print("Server LAN IP:", server_ip)
+
+    while True:
+        udp.sendto((MESSAGE + server_ip).encode(), ('<broadcast>', DISCOVERY_PORT))
+        time.sleep(1)
+
+
+def tcp_server():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("", TCP_PORT))
+    s.listen(5)
+    print("TCP server listening on port", TCP_PORT)
+
+    while True:
+        client_sock, client_addr = s.accept()
+        print("Client connected from:", client_addr)
+        client_sock.send(b"Hello client, you found me!")
+        client_sock.close()
+
+
+# Run broadcaster + TCP server
+threading.Thread(target=discovery_broadcaster, daemon=True).start()
+tcp_server()
