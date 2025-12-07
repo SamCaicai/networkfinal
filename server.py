@@ -1,6 +1,7 @@
 from socket import *
 from threading import Thread
 import sys
+import time
 
 # List to store all connected client sockets
 clients = []
@@ -57,12 +58,37 @@ def handle_client(client_socket, address):
         client_socket.close()
         print(f"Client {address} disconnected. Total clients: {len(clients)}")
 
+def udp_broadcast(server_ip, brod_port):
+    """
+    Broadcast server IP address via UDP in a separate thread
+    """
+    udp = socket(AF_INET, SOCK_DGRAM)
+    udp.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    
+    while True:
+        try:
+            udp.sendto(b"Hello, clients!", (server_ip, brod_port))
+            time.sleep(1)
+        except Exception as e:
+            print(f"UDP broadcast error: {e}")
+            break
+    udp.close()
+
 def main():
     # Server configuration
     server_port = 12000  # Default port, can be changed via command line
-    
+    brod_port = 12001
     if len(sys.argv) > 1:
         server_port = int(sys.argv[1])
+    
+    # Get and display server IP address
+    server_ip = gethostbyname(gethostname())
+    print(f"Server IP: {server_ip}")
+    
+    # Start UDP broadcast in a separate thread
+    udp_thread = Thread(target=udp_broadcast, args=(server_ip, brod_port))
+    udp_thread.daemon = True  # Thread will exit when main program exits
+    udp_thread.start()
     
     # Create TCP server socket
     server_socket = socket(AF_INET, SOCK_STREAM)
@@ -97,5 +123,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
 
 
