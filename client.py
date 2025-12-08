@@ -19,27 +19,30 @@ class receive_message:
                 break   
     
 #serverAdd="127.0.0.1"
-serverPort= 12000
-#serverAdd=sys.argv[1] if len(sys.argv)>1 else "172.19.124.56"
-#serverPort=int(sys.argv[2]) if len(sys.argv)>2 else 12000
-udp = socket(AF_INET, SOCK_DGRAM)
-udp.bind(("", serverPort))
+#serverPort= 12000
+serverAdd=sys.argv[1] if len(sys.argv)>1 else "127.0.0.1"
+serverPort=int(sys.argv[2]) if len(sys.argv)>2 else 12000
+#udp = socket(AF_INET, SOCK_DGRAM)
+#udp.bind(("", serverPort))
 print("Listening for server broadcasts...")
 
-serverAdd = None
-while serverAdd is None:
-    data, addr = udp.recvfrom(1024)
+#serverAdd = None
+#while serverAdd is None:
+#    data, addr = udp.recvfrom(1024)
     #data, addr= udp.recv(200)
-    msg = data.decode()
+#    msg = data.decode()
 
-    if msg.startswith("SERVER_IP="):
-        serverAdd = msg.split("=")[1]
-        print("Discovered server at:", serverAdd)
+#    if msg.startswith("SERVER_IP="):
+#        serverAdd = msg.split("=")[1]
+#        print("Discovered server at:", serverAdd)
 
-udp.close()
+#udp.close()
 
 clientSock= socket(AF_INET, SOCK_STREAM)
 clientSock.connect((serverAdd, serverPort))
+request_user=clientSock.recv(200)
+user=input(request_user).encode()
+clientSock.send(user)
 print("Connected to server! You can now send messages.")
 receive_message(clientSock)
 while True:
