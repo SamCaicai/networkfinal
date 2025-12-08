@@ -20,7 +20,9 @@ class receive_message:
     
 #serverAdd="127.0.0.1"
 #serverPort= 12000
-serverAdd=sys.argv[1] if len(sys.argv)>1 else "127.0.0.1"
+ip= input('Type in server ip:')
+
+serverAdd=sys.argv[1] if len(sys.argv)>1 else ip
 serverPort=int(sys.argv[2]) if len(sys.argv)>2 else 12000
 #udp = socket(AF_INET, SOCK_DGRAM)
 #udp.bind(("", serverPort))
